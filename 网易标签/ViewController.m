@@ -17,18 +17,15 @@
 #define kHeadViewHeight 30
 #define kEdgeInset ((UIEdgeInsets){20,20,20,20})
 
-#define CLGScreenSizebounds [UIScreen mainScreen].bounds
-#define CLGScreenSize CLGScreenSizebounds.size
+#define CLGScreenbounds [UIScreen mainScreen].bounds
+#define CLGScreenSize CLGScreenbounds.size
 
 @interface ViewController () <UICollectionViewDataSource,UICollectionViewDelegate>
-@property (weak, nonatomic) IBOutlet UIView *topView;
-@property (weak, nonatomic) IBOutlet UIView *bottomView;
-@property (weak,nonatomic) UICollectionView *topCollView;
-@property (weak,nonatomic) UICollectionView *bottomCollView; 
 
-/***  <#释义#> */
-@property (strong,nonatomic) CLGInterestHeadGorup *topgroup;
-@property (strong,nonatomic) CLGInterestHeadGorup *bottongroup;
+@property (weak,nonatomic) UICollectionView *collView;
+/***  数据集合 CLGInterestHeadGorup */
+@property (strong,nonatomic) NSMutableArray *dataArray;
+
 /***  <#释义#> */
 @property (assign,nonatomic) BOOL isEdit;
 @end
@@ -40,60 +37,50 @@ static NSString * const reuseHeaderViewID = @"HeaderView";
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.topgroup = [[CLGInterestHeadGorup alloc] init];
-    self.bottongroup = [[CLGInterestHeadGorup alloc] init];
+    self.dataArray = [NSMutableArray array];
     
     [self initdata];
-    [self initCollectionView]; 
+    [self initCollectionView];
 }
 
 - (void)initCollectionView
 {
     self.view.backgroundColor = [UIColor whiteColor];
     CGFloat width = (CLGScreenSize.width -(2 * kEdgeInset.left) - (kColumn -1) * kMarginColumn  ) / kColumn;
-    {
-        //UICollectionViewFlowLayout 这里不能和下面的bottomCollView共用,否则更新数据出错
-        UICollectionViewFlowLayout *flowLayout = [[UICollectionViewFlowLayout alloc] init];
-        flowLayout.itemSize =CGSizeMake(width , kHeight);
-        flowLayout.minimumLineSpacing = kMarginTop ;
-        flowLayout.minimumInteritemSpacing = kMarginColumn ;
-        self.topCollView = [self collectionView:flowLayout parentView:self.topView];
- 
-    }
-    {
-        UICollectionViewFlowLayout *flowLayout = [[UICollectionViewFlowLayout alloc] init];
-        flowLayout.itemSize =CGSizeMake(width , kHeight);
-        flowLayout.minimumLineSpacing = kMarginTop ;
-        flowLayout.minimumInteritemSpacing = kMarginColumn ;
-        self.bottomCollView = [self collectionView:flowLayout parentView:self.bottomView];
-    }
-}
-- (UICollectionView *)collectionView :(UICollectionViewFlowLayout *)flowLayout parentView:(UIView *)parentView
-{
-    CGRect screenRect = parentView.bounds;
-    screenRect.size.width = CLGScreenSize.width;
-    UICollectionView *CollView = [[UICollectionView alloc] initWithFrame:screenRect
-                                                    collectionViewLayout:flowLayout];
+    
+    UICollectionViewFlowLayout *flowLayout = [[UICollectionViewFlowLayout alloc] init];
+    flowLayout.itemSize =CGSizeMake(width , kHeight);
+    flowLayout.minimumLineSpacing = kMarginTop ;
+    flowLayout.minimumInteritemSpacing = kMarginColumn ;
     
     
-    CollView.collectionViewLayout = flowLayout;
-    CollView.pagingEnabled = NO;
+    CGRect screenRect =CLGScreenbounds;
+    UICollectionView *cView = [[UICollectionView alloc] initWithFrame:screenRect
+                                                 collectionViewLayout:flowLayout];
     
-    CollView.dataSource = self;
-    CollView.delegate = self;
-    CollView.backgroundColor =[UIColor orangeColor];
     
-    [CollView registerNib:[UINib nibWithNibName:@"CLGInterestCollectionViewCell" bundle:nil] forCellWithReuseIdentifier:reuseID];
-    [CollView registerNib:[UINib nibWithNibName:@"CLGCollectionReusableHeadView" bundle:nil] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:reuseHeaderViewID];
-    [parentView addSubview:CollView];
-    return CollView;
+    cView.collectionViewLayout = flowLayout;
+    cView.pagingEnabled = NO;
+    
+    cView.dataSource = self;
+    cView.delegate = self;
+    cView.backgroundColor =[UIColor orangeColor];
+    
+    [cView registerNib:[UINib nibWithNibName:@"CLGInterestCollectionViewCell" bundle:nil] forCellWithReuseIdentifier:reuseID];
+    [cView registerNib:[UINib nibWithNibName:@"CLGCollectionReusableHeadView" bundle:nil] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:reuseHeaderViewID];
+    cView.contentInset = UIEdgeInsetsMake(20, 0, 0, 0);
+    self.collView = cView;
+    
+    [self.view addSubview:cView];
+    
+    
 }
 
 - (void)initdata
 {
     __weak typeof (self)weakSelf = self;
     {
-        CLGInterestHeadGorup *group = self.topgroup;
+        CLGInterestHeadGorup *group = [[CLGInterestHeadGorup alloc] init];
         group.items = [NSMutableArray array];
         group.groupHeadTilte = @"我的兴趣标签";
         group.groupRightTitle = @"编辑";
@@ -108,13 +95,14 @@ static NSString * const reuseHeaderViewID = @"HeaderView";
             gp.groupRightTitle = [gp.groupRightTitle isEqualToString:@"编辑"] ? @"删除" : @"编辑";
             [btn setTitle:gp.groupRightTitle forState:UIControlStateNormal];
             
-            [weakSelf.topCollView reloadData];
+            [weakSelf.collView reloadData];
         }];
-        [self  randomData:group count:0];
+        [self randomData:group count:0];
+        [self.dataArray addObject:group];
         
     }
     {
-        CLGInterestHeadGorup *group = self.bottongroup;
+        CLGInterestHeadGorup *group = [[CLGInterestHeadGorup alloc] init];
         group.groupHeadTilte = @"推荐标签";
         group.groupRightTitle = @"换一组";
         group.items = [NSMutableArray array];
@@ -122,9 +110,10 @@ static NSString * const reuseHeaderViewID = @"HeaderView";
             if(weakSelf.isEdit)return ;
             [gp.items removeAllObjects];
             [weakSelf randomData:gp count:0];
-            [weakSelf.bottomCollView reloadData];
+            [weakSelf.collView reloadData];
         }];
-        [self  randomData:group count:0]; 
+        [self  randomData:group count:0];
+        [self.dataArray addObject:group];
     }
 }
 
@@ -134,7 +123,7 @@ static NSString * const reuseHeaderViewID = @"HeaderView";
 {
     // NSUInteger count = 1;
     count = arc4random_uniform(10);
-    
+    if(count == 0) count = 10 ;
     for (NSUInteger i = 0 ; i< count; i++) {
         NSString *str = [NSString stringWithFormat:@"%ld",time(NULL)- arc4random_uniform(1000)];
         NSInteger start = str.length - 3;
@@ -157,36 +146,22 @@ static NSString * const reuseHeaderViewID = @"HeaderView";
 #pragma mark 数据源
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
 {
-//    if(collectionView == _topCollView)
-//    {
-//        return  1;
-//    }
-//    return 1;
-    return 1;
+    return self.dataArray.count;
 }
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section{
     
-    if(collectionView == _topCollView)
-    {
-        return self.topgroup.items.count;
-    }
-    return self.bottongroup.items.count;
+    CLGInterestHeadGorup *group = self.dataArray[section];
+    return group.items.count;
     
     
 }
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-     CLGInterestCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseID forIndexPath:indexPath];
-    if(collectionView == _topCollView)
-    {
-        
-        cell.interestTag = self.topgroup.items[indexPath.row];
-        return cell;
-    }else
-    {
-        cell.interestTag =self.bottongroup.items[indexPath.row];
-        return cell;
-    }
+    CLGInterestCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseID forIndexPath:indexPath];
+    
+    CLGInterestHeadGorup *group = self.dataArray[indexPath.section];
+    cell.interestTag = group.items[indexPath.row];
+    return cell;
     
 }
 
@@ -204,22 +179,11 @@ referenceSizeForHeaderInSection:(NSInteger)section
  */
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath
 {
-      CLGCollectionReusableHeadView *reusableView =  [collectionView  dequeueReusableSupplementaryViewOfKind:kind withReuseIdentifier:reuseHeaderViewID forIndexPath:indexPath];
-    if(collectionView == _topCollView)
-    {
-      
-        CLGInterestHeadGorup *group = self.topgroup;
-        group.idxPath = indexPath;
-        reusableView.group = group;
-        return reusableView;
-    }
-    else
-    {
-        CLGInterestHeadGorup *group = self.bottongroup;
-        group.idxPath = indexPath;
-        reusableView.group = group;
-        return reusableView;
-    }
+    CLGCollectionReusableHeadView *reusableView =  [collectionView  dequeueReusableSupplementaryViewOfKind:kind withReuseIdentifier:reuseHeaderViewID forIndexPath:indexPath];
+    CLGInterestHeadGorup *group = self.dataArray[indexPath.section];
+    group.idxPath = indexPath;
+    reusableView.group = group;
+    return reusableView;
     
 }
 /**
@@ -233,38 +197,52 @@ referenceSizeForHeaderInSection:(NSInteger)section
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
+    /*
+    注意: deleteItemsAtIndexPaths insertItemsAtIndexPaths 重新请求
+    - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
+    - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
+     两个方法;所以必须要先改动数据源在删除或者增加; 否则异常!!! 弄了我一天的时间.....擦...
+   */
     NSLog(@"indexPath: %@",indexPath);
-    if(self.isEdit)
+    if (indexPath.section == 1)
     {
-        if(collectionView == self.bottomCollView) return; 
-        CLGInterestHeadGorup *group = self.topgroup;
-        CLGInterestTag *tag =  group.items[indexPath.row];
-        [group.items removeObject:tag];
+        if(self.isEdit)  return;
+        
+        CLGInterestHeadGorup *gp0 = self.dataArray[indexPath.section];
+        CLGInterestTag *tag = gp0.items[indexPath.row];
+        
+        [gp0.items removeObject:tag];
         [collectionView deleteItemsAtIndexPaths:@[indexPath]];
         
-        CLGInterestHeadGorup *group2 = self.bottongroup;
-        [tag setDeleteStaut:NO];
-        [group2.items addObject:tag];
-        [self.bottomCollView insertItemsAtIndexPaths:@[[NSIndexPath indexPathForRow:group2.items.count -1 inSection:0]]];
-
         
-    }else{
-        if(collectionView == self.bottomCollView)
+        [tag setDeleteStaut:NO];
+        CLGInterestHeadGorup *gp1 = self.dataArray[0];
+        [gp1.items addObject:tag];
+        NSIndexPath *addpath = [NSIndexPath indexPathForRow:gp1.items.count -1  inSection:0];
+        [collectionView insertItemsAtIndexPaths:@[addpath]];
+    
+      
+    }else
+    {
+        if(self.isEdit)
         {
-            CLGInterestHeadGorup *group = self.bottongroup;
-            CLGInterestTag *tag =  group.items[indexPath.row];
-            [tag setDeleteStaut:NO];
-            [group.items removeObject:tag];
+            CLGInterestHeadGorup *gp0 = self.dataArray[indexPath.section];
+            CLGInterestTag *tag = gp0.items[indexPath.row];
+            
+           [tag setDeleteStaut:NO];
+            CLGInterestHeadGorup *gp1 = self.dataArray[1];
+            [gp1.items addObject:tag];
+            
+            NSIndexPath *addpath = [NSIndexPath indexPathForRow:gp1.items.count -1  inSection:1];
+            [collectionView insertItemsAtIndexPaths:@[addpath]];
+            
+            
+            [gp0.items removeObject:tag];
             [collectionView deleteItemsAtIndexPaths:@[indexPath]];
             
-            CLGInterestHeadGorup *group2 = self.topgroup;
-            [group2.items addObject:tag];
-            
-            [self.topCollView insertItemsAtIndexPaths:@[[NSIndexPath indexPathForRow:group2.items.count -1 inSection:0]]];
-           
         }
     }
-} 
+}
 
 
 @end
