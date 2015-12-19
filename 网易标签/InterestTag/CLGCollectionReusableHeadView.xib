@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9059" systemVersion="15B42" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9049"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionReusableView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="U6b-Vx-4bR" customClass="CLGCollectionReusableHeadView">
+            <rect key="frame" x="0.0" y="0.0" width="334" height="47"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <subviews>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GnI-rv-wKK">
+                    <rect key="frame" x="292" y="14" width="30" height="20"/>
+                    <animations/>
+                    <color key="backgroundColor" red="0.92941176469999998" green="0.58183874739999997" blue="0.13148033919999999" alpha="1" colorSpace="calibratedRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="20" id="WQ9-JU-igs"/>
+                        <constraint firstAttribute="width" constant="69" id="jxA-65-iPW"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                    <state key="normal" title="编辑">
+                        <color key="titleColor" red="0.23921568630000001" green="0.59607843140000005" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                    </state>
+                    <variation key="default">
+                        <mask key="constraints">
+                            <exclude reference="jxA-65-iPW"/>
+                        </mask>
+                    </variation>
+                    <connections>
+                        <action selector="rightBtnClick:" destination="U6b-Vx-4bR" eventType="touchUpInside" id="cKu-Mc-1hb"/>
+                    </connections>
+                </button>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="我的标签" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FiI-Y4-XWl">
+                    <rect key="frame" x="12" y="13.5" width="68" height="20.5"/>
+                    <animations/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <animations/>
+            <color key="backgroundColor" red="1" green="0.1022875992" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+            <constraints>
+                <constraint firstItem="FiI-Y4-XWl" firstAttribute="leading" secondItem="U6b-Vx-4bR" secondAttribute="leading" constant="12" id="AvJ-3D-55u"/>
+                <constraint firstItem="FiI-Y4-XWl" firstAttribute="centerY" secondItem="U6b-Vx-4bR" secondAttribute="centerY" id="EEp-Lt-aLT"/>
+                <constraint firstAttribute="trailing" secondItem="GnI-rv-wKK" secondAttribute="trailing" constant="12" id="hkF-d4-qex"/>
+                <constraint firstItem="GnI-rv-wKK" firstAttribute="centerY" secondItem="U6b-Vx-4bR" secondAttribute="centerY" id="kWe-Qq-1Qq"/>
+            </constraints>
+            <connections>
+                <outlet property="leftLabel" destination="FiI-Y4-XWl" id="4yF-97-yox"/>
+                <outlet property="rightButton" destination="GnI-rv-wKK" id="K5L-5t-myP"/>
+            </connections>
+            <point key="canvasLocation" x="344" y="152.5"/>
+        </collectionReusableView>
+    </objects>
+</document>
